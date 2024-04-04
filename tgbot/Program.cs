@@ -18,17 +18,17 @@ internal class Program
 
     private static async void OnMessage(ITelegramBotClient client, Update update)
     {
-        if (update.Message?.Text == "прив")
+        if (update.Message?.Text == "пошел нахуй")
         {
-            await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "привки");
+            await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "сам иди");
         }
-        ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] {new KeyboardButton[] { "Help me" }, new KeyboardButton[] { "Call me" },})
+        ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] {new KeyboardButton[] { "ты бот?" }, new KeyboardButton[] { "кто ты" },})
         {
             ResizeKeyboard = true
         };
 
         
-        Message sentMessage = await client.SendTextMessageAsync(update.Message?.Chat.Id, "Choose a response", replyMarkup: replyKeyboardMarkup, cancellationToken: token );
+        Message sentMessage = await client.SendTextMessageAsync(update.Message?.Chat.Id, "я не бот", replyMarkup: replyKeyboardMarkup, cancellationToken: token );
 
 
     }
