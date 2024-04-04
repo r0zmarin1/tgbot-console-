@@ -28,7 +28,7 @@ namespace tgbot
 
         private async Task Update(ITelegramBotClient client, Update update, CancellationToken token)
         {
-            Console.WriteLine($"New message: {update.Message?.Text ?? "[не текст]"}");
+            Console.WriteLine($"New message from {update.Message.Chat.FirstName}: {update.Message?.Text ?? "[не текст]"}");
             OnMessage?.Invoke(client, update);
             await Task.CompletedTask;
         }

@@ -23,22 +23,22 @@ internal class Program
             ResizeKeyboard = true
         };
 
-        if (update.Message?.Text == "/start")
+        switch (update.Message?.Text?.ToLower())
         {
-            await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri(""), caption: "на связи Кисса-бот! чтобы заказать наш Кисса-напиток, нажми кнопку новый заказ, а чтобы глянуть меню, нажми кнопку меню. а если ты уже ожидаешь свой заказ, нажми статус заказа", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
-            //await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "на связи Кисса-бот! чтобы заказать наш Кисса-напиток, нажми кнопку новый заказ, а чтобы глянуть меню, нажми кнопку меню. а если ты уже ожидаешь свой заказ, нажми статус заказа", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+            case "/start":
+                await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg"), caption: "На связи Кисса-бот!\nВыбери нужную команду;)", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+                break;
+            case "новый заказ":
+                await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/menu.jpeg"), caption: "глянь меню и выбери категорию", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+                break;
+            case "меню":
+                await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/menu.jpeg"), replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+                break;
+            case "статус заказа":
+                await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "данная функция недоступна", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+                break;
+            
         }
 
-        if (update.Message?.Text == "новый заказ")
-        {
-            await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "данная функция недоступна", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
-        }
-
-        if (update.Message?.Text == "меню")
-        {
-            await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "данная функция недоступна", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
-        }
-
-     
     }
 }
