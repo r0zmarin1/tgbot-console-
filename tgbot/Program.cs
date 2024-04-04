@@ -18,18 +18,27 @@ internal class Program
 
     private static async void OnMessage(ITelegramBotClient client, Update update)
     {
-        if (update.Message?.Text == "пошел нахуй")
-        {
-            await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "сам иди");
-        }
-        ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] {new KeyboardButton[] { "ты бот?" }, new KeyboardButton[] { "кто ты" },})
+        ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
         {
             ResizeKeyboard = true
         };
 
-        
-        Message sentMessage = await client.SendTextMessageAsync(update.Message?.Chat.Id, "я не бот", replyMarkup: replyKeyboardMarkup, cancellationToken: token );
+        if (update.Message?.Text == "/start")
+        {
+            await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri(""), caption: "на связи Кисса-бот! чтобы заказать наш Кисса-напиток, нажми кнопку новый заказ, а чтобы глянуть меню, нажми кнопку меню. а если ты уже ожидаешь свой заказ, нажми статус заказа", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+            //await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "на связи Кисса-бот! чтобы заказать наш Кисса-напиток, нажми кнопку новый заказ, а чтобы глянуть меню, нажми кнопку меню. а если ты уже ожидаешь свой заказ, нажми статус заказа", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+        }
 
+        if (update.Message?.Text == "новый заказ")
+        {
+            await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "данная функция недоступна", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+        }
 
+        if (update.Message?.Text == "меню")
+        {
+            await client.SendTextMessageAsync(update.Message?.Chat.Id ?? 833690650, "данная функция недоступна", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+        }
+
+     
     }
 }
