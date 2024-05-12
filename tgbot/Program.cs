@@ -1,12 +1,74 @@
 ﻿using Newtonsoft.Json.Linq;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using tgbot;
+using tgbot.DB;
 
-internal class Program
+internal class Program : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private ObservableCollection<DrinkOrder> drinkOrder;
+    private ObservableCollection<Adds> adds;
+    private ObservableCollection<Customer> customer;
+    private ObservableCollection<Drinks> drinks;
+    private ObservableCollection<Category> category;
+
+    public ObservableCollection<DrinkOrder> DrinkOrder
+    {
+        get => drinkOrder;
+        set
+        {
+            drinkOrder = value;
+            PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(DrinkOrder)));
+        }
+    }
+    public ObservableCollection<Adds> Adds
+    {
+        get => adds;
+        set
+        {
+            adds = value;
+            PropertyChanged?.Invoke(this,
+                    new PropertyChangedEventArgs(nameof(Adds)));
+        }
+    }
+    public ObservableCollection<Customer> Customer
+    {
+        get => customer;
+        set
+        {
+            customer = value;
+            PropertyChanged?.Invoke(this,
+                                new PropertyChangedEventArgs(nameof(Customer)));
+        }
+    }
+    public ObservableCollection<Drinks> Drinks
+    {
+        get => drinks;
+        set
+        {
+            drinks = value;
+            PropertyChanged?.Invoke(this,
+                                new PropertyChangedEventArgs(nameof(Drinks)));
+        }
+    }
+    public ObservableCollection<Category> Category
+    {
+        get => category;
+        set
+        {
+            category = value;
+            PropertyChanged?.Invoke(this,
+                                 new PropertyChangedEventArgs(nameof(Category)));
+        }
+    }
+
     static CancellationToken token = new CancellationToken();
     static Host kissabot;
     private static void Main()
@@ -16,8 +78,38 @@ internal class Program
         kissabot.OnMessage += OnMessage;
         Console.ReadLine();
     }
+    class LastMessage
+    {
+        public IReplyMarkup replyMarkup;
+        public string file;
+        public string text;
+    }
 
-    private static async void OnMessage(ITelegramBotClient client, Update update)
+    static Dictionary<long, LastMessage> lastButtons = new();
+
+    static LastMessage SetLastButtons(long user, IReplyMarkup buttons, string file, string text)
+    {
+        var data = new LastMessage {replyMarkup = buttons, file = file, text = text };
+        if (lastButtons.ContainsKey(user))
+            lastButtons[user] = data;
+        else
+            lastButtons.Add(user, data);
+        return data;
+    }
+    static ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
+    {
+        ResizeKeyboard = true
+    };
+    static LastMessage GetLastButtons(long user)
+    {
+        if (lastButtons.ContainsKey(user))
+            return lastButtons[user];
+        else
+        {
+            return new LastMessage { replyMarkup = replyKeyboardMarkup, file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg", text = "На связи Кисса-бот!\nВыбери нужную команду;)" };
+        }
+    }
+    private static async void OnMessage(ITelegramBotClient client, Update update, ObservableCollection<Drinks> Drinks)
     {
 
         ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
@@ -44,7 +136,7 @@ internal class Program
             new[]
             {
             InlineKeyboardButton.WithCallbackData(text: "кофя", callbackData: "coffee"),
-            InlineKeyboardButton.WithCallbackData(text: "иное", callbackData: "another"),
+            InlineKeyboardButton.WithCallbackData(text: "иное", callbackData: "another_coffee"),
             },
         }) ;
 
@@ -58,7 +150,7 @@ internal class Program
 
             new[]
             {
-            InlineKeyboardButton.WithCallbackData(text: "авторский напиток", callbackData: "author_drinks"),
+            InlineKeyboardButton.WithCallbackData(text: "авторский напиток", callbackData: "author_drink"),
             InlineKeyboardButton.WithCallbackData(text: "выпечка", callbackData: "bakery"),
             },
         });
@@ -68,25 +160,35 @@ internal class Program
             new[]
             {
             InlineKeyboardButton.WithCallbackData(text: "кофя", callbackData: "special_coffee"),
-            InlineKeyboardButton.WithCallbackData(text: "не кофя", callbackData: "another_coffee"),
+            InlineKeyboardButton.WithCallbackData(text: "не кофя", callbackData: "another_special_coffee"),
             },
         });
-        //await kissabot.Delete(client, update, token);
+
+        string file, text;
+        LastMessage data = null;
         switch (update.CallbackQuery?.Data)
         {
             case "toBack":
-                await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg"), caption: "На связи Кисса-бот!\nВыбери нужную команду;)", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+                data = GetLastButtons(update.CallbackQuery.From.Id);              
                 break;
             case "base_menu":
-                await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/base_menu.jpg"), caption: "супер! что дальше?", replyMarkup: base_menu, cancellationToken: token);
+                file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/base_menu.jpg";
+                text = "супер! что дальше?";
+                data = SetLastButtons(update.CallbackQuery.From.Id, base_menu, file, text);
                 break;
             case "adds":
-                await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/adds.png"), caption: "супер! что дальше?", replyMarkup: adds, cancellationToken: token);
+                file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/adds.png";
+                text = "супер! что дальше?";
+                data = SetLastButtons(update.CallbackQuery.From.Id, adds, file, text);
                 break;
             case "special_menu":
-                await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/special.png"), caption: "супер! что дальше?", replyMarkup: special_menu, cancellationToken: token);
+                file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/special.png";
+                text = "супер! что дальше?";
+                data = SetLastButtons(update.CallbackQuery.From.Id, special_menu, file, text);
                 break;
         }
+        if (data != null)
+            await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri(data.file), caption: data.text, replyMarkup: data.replyMarkup, cancellationToken: token);
 
         switch (update.Message?.Text?.ToLower())
         {
@@ -107,7 +209,13 @@ internal class Program
                 break;
             
         }
-
+        string sql = "SELECT d.Id, d.Title, d.Description, d.Price, d.Size, c.Id_category FROM Drinks d, Category c";
+        Drinks = new ObservableCollection<Drinks>(DrinksRepository.Instance.GetDrinks(sql));
+        if (update.CallbackQuery?.Data == "coffee")
+        {
+            await client.SendTextMessageAsync(update.Message?.Chat.Id, text: sql, cancellationToken: token); 
+            
+        }
 
     }
 }
