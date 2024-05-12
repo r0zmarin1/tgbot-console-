@@ -31,7 +31,7 @@ namespace tgbot.DB
             if (connect == null)
                 return result;
 
-            string sql = "SELECT * FROM category";
+            string sql = "SELECT title FROM category";
             using (var mc = new MySqlCommand(sql, connect))
             using (var reader = mc.ExecuteReader())
             {

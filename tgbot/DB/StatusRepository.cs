@@ -7,42 +7,42 @@ using System.Threading.Tasks;
 
 namespace tgbot.DB
 {
-    public class DrinkOrderRepository
+    public class StatusRepository
     {
-        private DrinkOrderRepository()
+        private StatusRepository()
         {
 
         }
-
-        static DrinkOrderRepository instance;
-        public static DrinkOrderRepository Instance
+        static StatusRepository instance;
+        public static StatusRepository Instance
         {
             get
             {
                 if (instance == null)
-                    instance = new DrinkOrderRepository();
+                    instance = new StatusRepository();
                 return instance;
             }
         }
 
-        internal IEnumerable<DrinkOrder> GetAllDrinkOrders(string sql)
+        internal List<Status> GetStatus()
         {
-            var result = new List<DrinkOrder>();
+            List<Status> result = new List<Status>();
             var connect = MariaDB.Instance.GetConnection();
             if (connect == null)
                 return result;
+
+            string sql = "SELECT title FROM status";
             using (var mc = new MySqlCommand(sql, connect))
             using (var reader = mc.ExecuteReader())
             {
-                DrinkOrder order;
                 while (reader.Read())
                 {
-                    order = new DrinkOrder();
-                    result.Add(order);
-                    order.Id = reader.GetInt32("id");
-                    //order.Id_status = reader.GetInt32("id_status");
-                    //order.Id_customer = reader.GetInt32("id_customer");
-
+                    var status = new Status
+                    {
+                        Id = reader.GetInt32("id"),
+                        Title = reader.GetString("title")
+                    };
+                    result.Add(status);
                 }
             }
             return result;

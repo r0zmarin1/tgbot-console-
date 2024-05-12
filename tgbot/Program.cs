@@ -109,7 +109,7 @@ internal class Program : INotifyPropertyChanged
             return new LastMessage { replyMarkup = replyKeyboardMarkup, file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg", text = "На связи Кисса-бот!\nВыбери нужную команду;)" };
         }
     }
-    private static async void OnMessage(ITelegramBotClient client, Update update, ObservableCollection<Drinks> Drinks)
+    private static async void OnMessage(ITelegramBotClient client, Update update)
     {
 
         ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
@@ -209,13 +209,13 @@ internal class Program : INotifyPropertyChanged
                 break;
             
         }
-        string sql = "SELECT d.Id, d.Title, d.Description, d.Price, d.Size, c.Id_category FROM Drinks d, Category c";
-        Drinks = new ObservableCollection<Drinks>(DrinksRepository.Instance.GetDrinks(sql));
-        if (update.CallbackQuery?.Data == "coffee")
-        {
-            await client.SendTextMessageAsync(update.Message?.Chat.Id, text: sql, cancellationToken: token); 
+        //string sql = "SELECT d.Id, d.Title, d.Description, d.Price, d.Size, c.Id_category FROM Drinks d, Category c";
+        //Drinks = new ObservableCollection<Drinks>(DrinksRepository.Instance.GetDrinks(sql));
+        //if (update.CallbackQuery?.Data == "coffee")
+        //{
+        //    await client.SendTextMessageAsync(update.Message?.Chat.Id, text: sql, cancellationToken: token); 
             
-        }
+        //}
 
     }
 }

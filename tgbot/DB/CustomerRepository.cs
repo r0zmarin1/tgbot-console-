@@ -48,7 +48,7 @@ namespace tgbot.DB
 
             return result;
         }
-        internal void AddEmployee(Customer customer)
+        internal void AddCustomer(Customer customer)
         {
             var connect = MariaDB.Instance.GetConnection();
             if (connect == null)

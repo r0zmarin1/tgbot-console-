@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace tgbot.DB
 {
-    public class DrinkOrder
+    public class Status
     {
         public int Id { get; set; }
-        public List<Status> Status { get; set; } = new();
-        public List<Customer> Customer { get; set; } = new();
+        public string Title { get; set; } = string.Empty;
     }
 }
