@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MySqlConnector;
+using Mysqlx.Crud;
+using Newtonsoft.Json.Linq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
@@ -7,10 +9,13 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using tgbot;
 using tgbot.DB;
+using Update = Telegram.Bot.Types.Update;
 
 internal class Program : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    
 
     //private ObservableCollection<DrinkOrder> drinkOrder;
     //private ObservableCollection<Adds> adds;
@@ -111,11 +116,14 @@ internal class Program : INotifyPropertyChanged
     //}
     private static async void OnMessage(ITelegramBotClient client, Update update)
     {
+        string connection = "server=localhost;port=3306;user=root;password=Masha0325;database=coffeeshop;Character Set=utf8mb4;";
+        MySqlConnection connect = new MySqlConnection(connection);
 
-        ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
-        {
-            ResizeKeyboard = true
-        };
+
+        var message = update.Message;
+        connect.Open();
+
+        
 
         InlineKeyboardMarkup newOrder = new(new[]
         {
@@ -183,6 +191,37 @@ internal class Program : INotifyPropertyChanged
                 InlineKeyboardButton.WithCallbackData(text: "Кисель", callbackData: "kissel"),
             },
         });
+        InlineKeyboardMarkup special_coffee = new(new[]
+{
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData(text: "Для гуля", callbackData: "dlyagyliya"),
+                InlineKeyboardButton.WithCallbackData(text: "Очень странные дела", callbackData: "ochenstranniedela"),
+                InlineKeyboardButton.WithCallbackData(text: "Беннет", callbackData: "bennet"),
+                
+            },
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData(text: "Хината Шоё", callbackData: "hinatashoe"),
+                InlineKeyboardButton.WithCallbackData(text: "Kissa", callbackData: "kissa"),
+            },
+        });
+        InlineKeyboardMarkup another_special_coffee = new(new[]
+{
+            new[]
+            {
+                InlineKeyboardButton.WithCallbackData(text: "Хакку", callbackData: "hakku"),
+                InlineKeyboardButton.WithCallbackData(text: "Сяо", callbackData: "xiao"),
+                InlineKeyboardButton.WithCallbackData(text: "Рэй", callbackData: "rei"),
+                InlineKeyboardButton.WithCallbackData(text: "Mood L", callbackData: "moodl"),
+            },
+             new[]
+            {
+                InlineKeyboardButton.WithCallbackData(text: "Барби стайл", callbackData: "barbiestyle"),
+                InlineKeyboardButton.WithCallbackData(text: "Мята и шоколад", callbackData: "myataishocolad"),
+                InlineKeyboardButton.WithCallbackData(text: "Ведьмачий сбор", callbackData: "vedmachiysbor"),
+            },
+        });
         InlineKeyboardMarkup size = new(new[]
 {
             new[]
@@ -226,8 +265,11 @@ internal class Program : INotifyPropertyChanged
         {
             case "coffee":
                 {
-                    string getcoffee = "SELECT title, description, price FROM Drinks";
-                    using (MySqlConnector nowgetcoffee = new MySqlCommand(getcoffee, mySqlConnection))
+                    string getcoffee = "SELECT title, description, price FROM Drinks WHERE user_id = @Id";
+                    using (MySqlCommand nowgetcoffee = new MySqlCommand(getcoffee, connect))
+                    {
+                        nowgetcoffee.Parameters.Add(new MySqlParameter("Id", update.CallbackQuery.Message.Chat.Id));
+                    }
                     await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: coffee, cancellationToken: token);
                 }
                 break;
@@ -243,6 +285,60 @@ internal class Program : INotifyPropertyChanged
             case "another_coffee":
                 await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: another_coffee, cancellationToken: token);
                 break;
+            case "matchalatte":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "tea":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "cacao":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "kissel":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "special_coffee":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: special_coffee, cancellationToken: token);
+                break;
+            case "dlyagyliya":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "ochenstranniedela":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "bennet":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "hinatashoe":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "kissa":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "another_special_coffee":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: another_special_coffee, cancellationToken: token);
+                break;
+            case "hakku":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "xiao":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "rei":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "moodl":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "barbiestyle":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "myataishocolad":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
+            case "vedmachiysbor":
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                break;
         }
 
         //if (data != null)
@@ -251,7 +347,28 @@ internal class Program : INotifyPropertyChanged
         switch (update.Message?.Text?.ToLower())
         {
             case "/start":
-                await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg"), caption: "На связи Кисса-бот!\nВыбери нужную команду;)", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+                {
+                    await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg"), caption: "На связи Кисса-бот!\nВыбери нужную команду;)", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+
+                    string checkcustomer = "SELECT id FROM customer WHERE id = @Id";
+                    using (MySqlCommand check = new MySqlCommand(checkcustomer, connect))
+                    {
+                        check.Parameters.Add(new MySqlParameter("Id", message.Chat.Id));
+                        using (MySqlDataReader reader = check.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
+                                {
+                                    ResizeKeyboard = true
+                                };
+
+                            }
+                            //await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg"), caption: "На связи Кисса-бот!\nВыбери нужную команду;)", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
+
+                        }
+                    }
+                }
                 break;
             case "новый заказ":
                 await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/menu.jpeg"), caption: "глянь меню и выбери категорию", replyMarkup: newOrder, cancellationToken: token);
