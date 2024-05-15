@@ -1,78 +1,20 @@
-﻿using MySqlConnector;
+﻿using MySql.Data.MySqlClient;
 using Mysqlx.Crud;
 using Newtonsoft.Json.Linq;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 using tgbot;
-using tgbot.DB;
 using Update = Telegram.Bot.Types.Update;
 
 internal class Program : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    
-
-    //private ObservableCollection<DrinkOrder> drinkOrder;
-    //private ObservableCollection<Adds> adds;
-    //private ObservableCollection<Customer> customer;
-    //private ObservableCollection<Drinks> drinks;
-    //private ObservableCollection<Category> category;
-
-    //public ObservableCollection<DrinkOrder> DrinkOrder
-    //{
-    //    get => drinkOrder;
-    //    set
-    //    {
-    //        drinkOrder = value;
-    //        PropertyChanged?.Invoke(this,
-    //                new PropertyChangedEventArgs(nameof(DrinkOrder)));
-    //    }
-    //}
-    //public ObservableCollection<Adds> Adds
-    //{
-    //    get => adds;
-    //    set
-    //    {
-    //        adds = value;
-    //        PropertyChanged?.Invoke(this,
-    //                new PropertyChangedEventArgs(nameof(Adds)));
-    //    }
-    //}
-    //public ObservableCollection<Customer> Customer
-    //{
-    //    get => customer;
-    //    set
-    //    {
-    //        customer = value;
-    //        PropertyChanged?.Invoke(this,
-    //                            new PropertyChangedEventArgs(nameof(Customer)));
-    //    }
-    //}
-    //public ObservableCollection<Drinks> Drinks
-    //{
-    //    get => drinks;
-    //    set
-    //    {
-    //        drinks = value;
-    //        PropertyChanged?.Invoke(this,
-    //                            new PropertyChangedEventArgs(nameof(Drinks)));
-    //    }
-    //}
-    //public ObservableCollection<Category> Category
-    //{
-    //    get => category;
-    //    set
-    //    {
-    //        category = value;
-    //        PropertyChanged?.Invoke(this,
-    //                             new PropertyChangedEventArgs(nameof(Category)));
-    //    }
-    //}
 
     static CancellationToken token = new CancellationToken();
     static Host kissabot;
@@ -83,45 +25,35 @@ internal class Program : INotifyPropertyChanged
         kissabot.OnMessage += OnMessage;
         Console.ReadLine();
     }
-    //class LastMessage
-    //{
-    //    public IReplyMarkup replyMarkup;
-    //    public string file;
-    //    public string text;
-    //}
-
-    //static Dictionary<long, LastMessage> lastButtons = new();
-
-    //static LastMessage SetLastButtons(long user, IReplyMarkup buttons, string file, string text)
-    //{
-    //    var data = new LastMessage {replyMarkup = buttons, file = file, text = text };
-    //    if (lastButtons.ContainsKey(user))
-    //        lastButtons[user] = data;
-    //    else
-    //        lastButtons.Add(user, data);
-    //    return data;
-    //}
+   
     static ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
     {
         ResizeKeyboard = true
     };
-    //static LastMessage GetLastButtons(long user)
-    //{
-    //    if (lastButtons.ContainsKey(user))
-    //        return lastButtons[user];
-    //    else
-    //    {
-    //        return new LastMessage { replyMarkup = replyKeyboardMarkup, file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg", text = "На связи Кисса-бот!\nВыбери нужную команду;)" };
-    //    }
-    //}
+
+    public static string Drink { get; private set; }
+
     private static async void OnMessage(ITelegramBotClient client, Update update)
     {
         string connection = "server=localhost;port=3306;user=root;password=Masha0325;database=coffeeshop;Character Set=utf8mb4;";
         MySqlConnection connect = new MySqlConnection(connection);
+        OpenConnection();
 
-
+        bool OpenConnection()
+        {
+            try
+            {
+                connect.Open();
+                Console.WriteLine("connection open!");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
         var message = update.Message;
-        connect.Open();
 
         
 
@@ -231,113 +163,123 @@ internal class Program : INotifyPropertyChanged
             },
         });
 
-        //string file, text;
-        //LastMessage data = null;
         switch (update.CallbackQuery?.Data)
         {
             case "toBack":
-                //data = GetLastButtons(update.CallbackQuery.From.Id);
                 await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg"), caption: "На связи Кисса-бот!\nВыбери нужную команду;)", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
 
                 break;
             case "base_menu":
-                ////file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/base_menu.jpg";
-                ////text = "супер! что дальше?";
-                ////data = SetLastButtons(update.CallbackQuery.From.Id, base_menu, file, text);
                 await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/base_menu.jpg"), caption: "супер! что дальше?", replyMarkup: base_menu, cancellationToken: token);
                 break;
             case "adds":
-                //file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/adds.png";
-                //text = "супер! что дальше?";
-                //data = SetLastButtons(update.CallbackQuery.From.Id, adds, file, text);
                 await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/adds.png"), caption: "супер! что дальше?", replyMarkup: adds, cancellationToken: token);
 
                 break;
             case "special_menu":
-                //file = "https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/special.png";
-                //text = "супер! что дальше?";
-                //data = SetLastButtons(update.CallbackQuery.From.Id, special_menu, file, text);
                 await client.SendPhotoAsync(update.CallbackQuery.From.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/special.png"), caption: "супер! что дальше?", replyMarkup: special_menu, cancellationToken: token);
                 break;
             
         }
+
+
         switch (update.CallbackQuery?.Data)
         {
+            case "max":
+                string sql = "SELECT title FROM drinks WHERE size = 'M'";
+                using (MySqlCommand getMdrinks = new MySqlCommand(sql, connect))
+                {
+                    using (MySqlDataReader drinks = getMdrinks.ExecuteReader())
+                    {
+                        Drink = drinks.GetString("title");
+                        
+                        await client.SendTextMessageAsync(update.CallbackQuery.Message.Chat.Id, Drink, cancellationToken: token);
+                        //await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/menu.jpeg"), caption: "глянь меню и выбери категорию", replyMarkup: newOrder, cancellationToken: token);
+                    }
+                }
+            break;
             case "coffee":
                 {
-                    string getcoffee = "SELECT title, description, price FROM Drinks WHERE user_id = @Id";
+                    string getcoffee = "SELECT title, description, price FROM Drinks WHERE user_id = @id";
                     using (MySqlCommand nowgetcoffee = new MySqlCommand(getcoffee, connect))
                     {
-                        nowgetcoffee.Parameters.Add(new MySqlParameter("Id", update.CallbackQuery.Message.Chat.Id));
+                        nowgetcoffee.Parameters.Add(new MySqlParameter("id", update.CallbackQuery.Message.Chat.Id));
                     }
                     await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: coffee, cancellationToken: token);
                 }
                 break;
             case "americano":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                {
+                    await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
+                    if(update.CallbackQuery?.Data == "max")
+                    {
+                        await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "хахаха работает!",  cancellationToken: token);
+
+                    }
+                }
                 break;
             case "cappuchino":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!",  cancellationToken: token);
                 break;
             case "latte":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "another_coffee":
                 await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: another_coffee, cancellationToken: token);
                 break;
             case "matchalatte":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "tea":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "cacao":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!" , cancellationToken: token);
                 break;
             case "kissel":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "special_coffee":
                 await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: special_coffee, cancellationToken: token);
                 break;
             case "dlyagyliya":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "ochenstranniedela":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "bennet":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "hinatashoe":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "kissa":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "another_special_coffee":
                 await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "скорее выбирай желаемое!", replyMarkup: another_special_coffee, cancellationToken: token);
                 break;
             case "hakku":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "xiao":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "rei":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "moodl":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "barbiestyle":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "myataishocolad":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
             case "vedmachiysbor":
-                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", replyMarkup: size, cancellationToken: token);
+                await client.SendTextMessageAsync(update.CallbackQuery.From.Id, "выбери размер!", cancellationToken: token);
                 break;
         }
 
@@ -358,12 +300,14 @@ internal class Program : INotifyPropertyChanged
                         {
                             if (reader.Read())
                             {
+                                Console.WriteLine("подключение успешно");
                                 ReplyKeyboardMarkup replyKeyboardMarkup = new(new[] { new KeyboardButton[] { "новый заказ" }, new KeyboardButton[] { "меню" }, new KeyboardButton[] { "статус заказа" } })
                                 {
                                     ResizeKeyboard = true
                                 };
 
                             }
+
                             //await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/greeting_photo.jpeg"), caption: "На связи Кисса-бот!\nВыбери нужную команду;)", replyMarkup: replyKeyboardMarkup, cancellationToken: token);
 
                         }
@@ -371,7 +315,8 @@ internal class Program : INotifyPropertyChanged
                 }
                 break;
             case "новый заказ":
-                await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/menu.jpeg"), caption: "глянь меню и выбери категорию", replyMarkup: newOrder, cancellationToken: token);
+                await client.SendTextMessageAsync(update.Message.Chat.Id, "для начала давай определимся с размером напитка!", replyMarkup: size, cancellationToken: token);
+                //await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/menu.jpeg"), caption: "глянь меню и выбери категорию", replyMarkup: newOrder, cancellationToken: token);
                 break;
             case "меню":
                 await client.SendPhotoAsync(update.Message.Chat.Id, InputFile.FromUri("https://raw.githubusercontent.com/r0zmarin1/tgbot-console-/master/tgbot/docs/menu.jpeg"), replyMarkup: replyKeyboardMarkup, cancellationToken: token);
@@ -384,13 +329,5 @@ internal class Program : INotifyPropertyChanged
                 break;
             
         }
-        //string sql = "SELECT d.Id, d.Title, d.Description, d.Price, d.Size, c.Id_category FROM Drinks d, Category c";
-        //Drinks = new ObservableCollection<Drinks>(DrinksRepository.Instance.GetDrinks(sql));
-        //if (update.CallbackQuery?.Data == "coffee")
-        //{
-        //    await client.SendTextMessageAsync(update.Message?.Chat.Id, text: sql, cancellationToken: token); 
-            
-        //}
-
     }
 }
